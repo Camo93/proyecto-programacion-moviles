@@ -12,18 +12,67 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function Login() {
     const [name, setName] = useState('');
+    const [lastname, setLastName] = useState('');
     const [email, setEmail] = useState('');
+    const [emailConfirm, setEmailConfirm] = useState('');
     const [birthDate, setBirthDate] = useState('');
     const [gender, setGender] = useState('');
-    const navigation = useNavigation(); // ← Aquí se inicializa
+    const navigation = useNavigation();
+
+    // Función para formatear fecha con barras automáticamente
+    const handleBirthDateChange = (text) => {
+        let cleaned = text.replace(/\D/g, '');
+        if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
+
+        let formatted = '';
+        if (cleaned.length <= 2) {
+            formatted = cleaned;
+        } else if (cleaned.length <= 4) {
+            formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
+        } else {
+            formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4) + '/' + cleaned.slice(4);
+        }
+        setBirthDate(formatted);
+    };
+
     const handleNext = () => {
-        if (!name || !email || !birthDate || !gender) {
+        if (!name || !email || !emailConfirm || !birthDate || !gender) {
             alert('Por favor completa todos los campos');
             return;
-    }
+        }
 
-        debugger
-        navigation.navigate('MuscleSelection', { name, gender });
+        // Validar formato DD/MM/AAAA con regex
+        const dateRegex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
+        if (!dateRegex.test(birthDate)) {
+            alert('Fecha debe tener formato DD/MM/AAAA');
+            return;
+        }
+
+        // Validar fecha válida
+        const [day, month, year] = birthDate.split('/').map(Number);
+        const dateObj = new Date(year, month - 1, day);
+        if (
+            dateObj.getFullYear() !== year ||
+            dateObj.getMonth() !== month - 1 ||
+            dateObj.getDate() !== day
+        ) {
+            alert('Por favor ingresa una fecha válida');
+            return;
+        }
+
+        // Validar formato básico de correo electrónico
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Por favor ingresa un correo electrónico válido');
+            return;
+        }
+
+        // Validar que correo y confirmación coincidan
+        if (email !== emailConfirm) {
+            alert('Los correos no coinciden');
+            return;
+        }
+        navigation.navigate('ProfileSetup', { name, gender });
     };
 
     return (
@@ -35,9 +84,15 @@ export default function Login() {
 
             <TextInput
                 style={styles.input}
-                placeholder="Nombre completo"
+                placeholder="Nombres"
                 value={name}
                 onChangeText={setName}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Apellidos"
+                value={lastname}
+                onChangeText={setLastName}
             />
             <TextInput
                 style={styles.input}
@@ -45,13 +100,23 @@ export default function Login() {
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
+                autoCapitalize="none"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Confirma tu correo"
+                value={emailConfirm}
+                onChangeText={setEmailConfirm}
+                keyboardType="email-address"
+                autoCapitalize="none"
             />
             <TextInput
                 style={styles.input}
                 placeholder="DD/MM/AAAA"
                 value={birthDate}
-                onChangeText={setBirthDate}
-                // keyboardType="numeric"  <-- mejor quita para que pueda ingresar '/'
+                onChangeText={handleBirthDateChange}
+                keyboardType="numeric"
+                maxLength={10}
             />
 
             <View style={styles.input}>
@@ -60,10 +125,10 @@ export default function Login() {
                     onValueChange={(itemValue) => setGender(itemValue)}
                     style={{ height: 50 }}
                 >
-                    <Picker.Item label="Selecciona tu género" value="" />
+                    <Picker.Item label="Género" value="" />
                     <Picker.Item label="Masculino" value="masculino" />
                     <Picker.Item label="Femenino" value="femenino" />
-                    <Picker.Item label="Otro" value="otro" />
+                    <Picker.Item label="Prefiero no decirlo" value="no-decir" />
                 </Picker>
             </View>
 
