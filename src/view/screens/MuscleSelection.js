@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, StyleSheet } from 'react-native';
 
-export default function MuscleSelection() {
+export default function MuscleSelection({ navigation, route }) {
   const muscles = ['Tríceps', 'Bíceps', 'Pierna', 'Pecho', 'Espalda', 'Hombro'];
 
   // Agrupar de a 2 elementos por fila
@@ -10,9 +10,17 @@ export default function MuscleSelection() {
     rows.push(muscles.slice(i, i + 2));
   }
 
-  const handleSelectMuscle = (muscle) => {
-    alert(`Seleccionaste: ${muscle}`);
-  };
+  // const handleSelectMuscle = (muscle) => {
+  //   alert(`Seleccionaste: ${muscle}`);
+  // };
+const handleSelectMuscle = (muscle) => {
+    if (muscle === 'Tríceps') {
+        navigation.navigate('Tricep', { nivel }); // <-- Aquí se navega
+      } else {
+        alert(`Aún no hay ejercicios para ${muscle}`);
+      }
+    };
+
 
   return (
     <SafeAreaView style={styles.container}>
